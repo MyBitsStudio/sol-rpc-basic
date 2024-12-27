@@ -22,7 +22,7 @@ SOL Basic RPC is an extension to Sol4K to relive missing functions and operation
 > TransactionMessage message = TransactionMessage.newMessage(wallet.getKeypair().getPublicKey(), connection.getLatestBlockHash(), instruction);
 > VersionedTransaction transaction = new VersionedTransaction(message);
 > transaction.sign(account.getWallet().getKeypair());
-> String signature = connection.sendTransaction(transaction);
+> String signature = connection.sendTransaction56(transaction);
 > ```
 
 ## Current RPC Features
