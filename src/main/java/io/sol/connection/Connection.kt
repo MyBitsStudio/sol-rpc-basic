@@ -7,9 +7,10 @@ import io.sol.api.RPCRequest
 import io.sol.api.impl.RPCRequests
 import io.sol.types.Commitment
 import io.sol.types.RPCUrls
-import io.utils.logger.Logger
+import io.utils.logger.Logger.logToSystem
 import lombok.Getter
 import org.jetbrains.annotations.Contract
+import org.sol4k.Base58.encode
 import org.sol4k.TransactionMessage
 import org.sol4k.VersionedTransaction
 import java.util.*
@@ -39,17 +40,21 @@ class Connection(url: String?, commitment: Commitment?) {
         this.commitment = commitment
     }
 
+    /**
+     * Returns the balance in lamports of the given PublicKey
+     * @param publicKey - The search in question
+     * @return - long value of lamports
+     */
     fun getBalance(publicKey: String): Long {
         rpcRequest = RPCRequest(this, RPCRequests.GET_BALANCE, java.util.List.of(publicKey))
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem(
+            logToSystem(
                 "Error getBalance (" + publicKey + ") : " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
                     "error"
                 )), 2
             )
-            return 0
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+            return -1
         }
         return rpcRequest!!.rpcResponseAsLong
     }
@@ -59,13 +64,12 @@ class Connection(url: String?, commitment: Commitment?) {
             rpcRequest = RPCRequest(this, RPCRequests.GET_LATEST_BLOCKHASH)
             rpcRequest!!.buildRequest()
             if (rpcRequest!!.hasError()) {
-                Logger.logToSystem(
+                logToSystem(
                     "Error getLatestBlockHash: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
                         "error"
                     )), 2
                 )
                 return null
-                //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
             }
             return rpcRequest!!.getRpcResponse("blockhash")
         }
@@ -75,8 +79,8 @@ class Connection(url: String?, commitment: Commitment?) {
             rpcRequest = RPCRequest(this, RPCRequests.GET_EXTENDED_BLOCKHASH)
             rpcRequest!!.buildRequest()
             if (rpcRequest!!.hasError()) {
-                Logger.logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
-                //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+                logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
+                return null
             }
             return rpcRequest!!.rpcResponse
         }
@@ -88,8 +92,8 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest = RPCRequest(this, RPCRequests.GET_FEE_FOR_MESSAGE, decoded).addParam(options)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+            logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
+            return -1
         }
         return rpcRequest!!.rpcResponseAsLong
     }
@@ -99,19 +103,19 @@ class Connection(url: String?, commitment: Commitment?) {
             rpcRequest = RPCRequest(this, RPCRequests.GET_FIRST_AVAILABLE_BLOCK)
             rpcRequest!!.buildRequest()
             if (rpcRequest!!.hasError()) {
-                Logger.logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
-                //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+                logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
+                return -1
             }
             return rpcRequest!!.rpcResponseAsLong
         }
 
-    val health: String
+    val health: String?
         get() {
             rpcRequest = RPCRequest(this, RPCRequests.GET_HEALTH)
             rpcRequest!!.buildRequest()
             if (rpcRequest!!.hasError()) {
-                Logger.logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
-                //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+                logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
+                return null
             }
             return rpcRequest!!.rpcResponseAsString
         }
@@ -120,13 +124,13 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest = RPCRequest(this, RPCRequests.GET_MIN_BALANCE_FOR_RENT_EXEMPTION, length)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+            logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
+            return -1
         }
         return rpcRequest!!.rpcResponseAsLong
     }
 
-    fun getMultipleAccounts(accounts: List<String?>): JsonArray {
+    fun getMultipleAccounts(accounts: List<String?>): JsonArray? {
         val jsonArray = JsonArray()
         for (account in accounts) {
             jsonArray.add(account)
@@ -134,8 +138,8 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest = RPCRequest(this, RPCRequests.GET_MULTIPLE_ACCOUNTS, jsonArray)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+            logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
+            return null
         }
         return rpcRequest!!.extractedRpcResponseArray
     }
@@ -150,18 +154,17 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest = RPCRequest(this, RPCRequests.GET_SIGNATURE_STATUSES, jsonArray).addParam(options)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem(
+            logToSystem(
                 "Error getSignatureStatues: " + (if (rpcRequest!!.rpcResponse == null) null else rpcRequest!!.getRpcResponse(
                     "error"
                 )), 2
             )
             return null
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
         }
         return rpcRequest!!.extractedRpcResponseArray
     }
 
-    fun getSignatureStatus(signature: String): JsonArray {
+    fun getSignatureStatus(signature: String): JsonArray? {
         options = JsonObject()
         options.addProperty("searchTransactionHistory", false)
         rpcRequest = RPCRequest(
@@ -171,20 +174,20 @@ class Connection(url: String?, commitment: Commitment?) {
         ).addParam(options)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+            logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
+            return null
         }
         return rpcRequest!!.extractedRpcResponseArray
     }
 
-    fun getSignaturesForAddress(address: String?, limit: Int): JsonArray {
+    fun getSignaturesForAddress(address: String?, limit: Int): JsonArray? {
         options = JsonObject()
         options.addProperty("limit", limit)
         rpcRequest = RPCRequest(this, RPCRequests.GET_SIGNATURE_FOR_ADDRESS, address).addParam(options)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+            logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
+            return null
         }
         return rpcRequest!!.extractedRpcResponseArray
     }
@@ -194,8 +197,8 @@ class Connection(url: String?, commitment: Commitment?) {
             rpcRequest = RPCRequest(this, RPCRequests.GET_SLOT)
             rpcRequest!!.buildRequest()
             if (rpcRequest!!.hasError()) {
-                Logger.logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
-                //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+                logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
+                return -1
             }
             return rpcRequest!!.rpcResponseAsLong
         }
@@ -209,13 +212,12 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest!!.addParam(options)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem(
+            logToSystem(
                 "Error getTokenAccountsByOwner: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
                     "error"
                 )), 2
             )
             return null
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
         }
 
         return rpcRequest!!.extractedRpcResponseArray
@@ -239,14 +241,14 @@ class Connection(url: String?, commitment: Commitment?) {
     }
 
 
-    fun getAllTokenBalances(publicKey: String?): Map<String, Long> {
+    fun getAllTokenBalances(publicKey: String?): Map<String, Long>? {
         val accounts = getTokenAccountsByOwner(publicKey)
         val balances: MutableMap<String, Long> = HashMap()
         for (account in accounts!!) {
             val accountObject = account.asJsonObject
             val data =
                 accountObject["account"].asJsonObject["data"].asJsonObject["parsed"].asJsonObject["info"].asJsonObject
-                    ?: throw RuntimeException("Error: Account data is null")
+                    ?: return null
             val mint = data["mint"].asString
             val tokenAmount = data["tokenAmount"].asJsonObject
             balances[mint] = tokenAmount["amount"].toString().replace("\"".toRegex(), "").toLong()
@@ -254,7 +256,7 @@ class Connection(url: String?, commitment: Commitment?) {
         return balances
     }
 
-    fun getTokenAccountsByOwnerAndMint(publicKey: String?, mint: String?): JsonArray {
+    fun getTokenAccountsByOwnerAndMint(publicKey: String?, mint: String?): JsonArray? {
         options = JsonObject()
         options.addProperty("mint", mint)
         rpcRequest = RPCRequest(this, RPCRequests.GET_TOKEN_ACCOUNTS_BY_OWNER, publicKey).addParam(options)
@@ -263,17 +265,16 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest!!.addParam(options)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem(
-                "Error: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
-                    "error"
-                )), 2
+            logToSystem(
+                "Error: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse("error")),
+                2
             )
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+            return null
         }
         return rpcRequest!!.extractedRpcResponseArray
     }
 
-    fun getTokenAccountsByOwnerAndProgram(publicKey: String?, programId: String?): JsonArray {
+    fun getTokenAccountsByOwnerAndProgram(publicKey: String?, programId: String?): JsonArray? {
         options = JsonObject()
         options.addProperty("programId", programId)
         rpcRequest = RPCRequest(this, RPCRequests.GET_TOKEN_ACCOUNTS_BY_OWNER, publicKey).addParam(options)
@@ -282,12 +283,11 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest!!.addParam(options)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem(
-                "Error: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
-                    "error"
-                )), 2
+            logToSystem(
+                "Error: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse("error")),
+                2
             )
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+            return null
         }
         return rpcRequest!!.extractedRpcResponseArray
     }
@@ -300,16 +300,15 @@ class Connection(url: String?, commitment: Commitment?) {
      * @return JsonArray of the largest accounts
      * @throws RuntimeException if the RPC request has an error
      */
-    fun getTokenLargestAccounts(mint: String?): JsonArray {
+    fun getTokenLargestAccounts(mint: String?): JsonArray? {
         rpcRequest = RPCRequest(this, RPCRequests.GET_TOKEN_LARGEST_ACCOUNTS, mint)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem(
-                "Error: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
-                    "error"
-                )), 2
+            logToSystem(
+                "Error: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse("error")),
+                2
             )
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+            return null
         }
         return rpcRequest!!.extractedRpcResponseArray
     }
@@ -326,13 +325,12 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest = RPCRequest(this, RPCRequests.GET_TOKEN_SUPPLY, mint)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem(
+            logToSystem(
                 "Error getTokenSupply: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
                     "error"
                 )), 2
             )
             return null
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
         }
         return rpcRequest!!.rpcResponse
     }
@@ -352,8 +350,8 @@ class Connection(url: String?, commitment: Commitment?) {
      * @throws RuntimeException if the RPC request has an error
      */
     fun getTokenDecimals(mint: String?): Int {
-        val tokenSupply = getTokenSupply(mint)
-        return tokenSupply!!["decimals"].asString.replace("\"".toRegex(), "").toInt()
+        val tokenSupply = getTokenSupply(mint) ?: return -1
+        return tokenSupply["decimals"].asString.replace("\"".toRegex(), "").toInt()
     }
 
     /**
@@ -368,8 +366,8 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest = RPCRequest(this, RPCRequests.GET_TRANSACTION, java.util.List.of(signature, "json"))
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+            logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
+            return null
         }
         return rpcRequest!!.rpcResponse
     }
@@ -388,8 +386,8 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest = RPCRequest(this, RPCRequests.IS_BLOCKHASH_VALID, blockhash).addParam(options)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+            logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
+            return false
         }
         return rpcRequest!!.extractedRpcResponseBoolean
     }
@@ -404,12 +402,12 @@ class Connection(url: String?, commitment: Commitment?) {
      * @return Transaction Signature String
      * @throws RuntimeException if the RPC request has an error
      */
-    fun requestAirdrop(publicKey: String?, lamports: Long): String {
+    fun requestAirdrop(publicKey: String?, lamports: Long): String? {
         rpcRequest = RPCRequest(this, RPCRequests.REQUEST_AIRDROP, publicKey).addParam(lamports)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+            logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
+            return null
         }
         return rpcRequest!!.rpcResponseAsString
     }
@@ -418,40 +416,24 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest = RPCRequest(this, RPCRequests.SEND_TRANSACTION, encodedTransaction)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem(
+            logToSystem(
                 "Error sendTransaction: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
                     "error"
                 )), 2
             )
             return null
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
         }
         return rpcRequest!!.rpcResponseAsString
     }
 
     fun sendTransaction64(transaction: VersionedTransaction): String? {
-        return sendMEVTransaction(transaction)
+        return sendTransaction(Base64.getEncoder().encodeToString(transaction.serialize()))
     }
 
-    fun sendMEVTransaction(transaction: VersionedTransaction): String? {
-        options = JsonObject()
-        options.addProperty("skipPreflight", false)
-        options.addProperty("preFlightCommitment", "finalized")
-        options.addProperty("encoding", "base64")
-        val encodedTransaction = Base64.getEncoder().encodeToString(transaction.serialize())
-        rpcRequest = RPCRequest(this, RPCRequests.SEND_TRANSACTION, encodedTransaction).addParam(options)
-        rpcRequest!!.buildRequest()
-        if (rpcRequest!!.hasError()) {
-            Logger.logToSystem(
-                "Error sendMEVTransaction: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
-                    "error"
-                )), 2
-            )
-            return null
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
-        }
-        return rpcRequest!!.rpcResponseAsString
+    fun sendTransaction58(transaction: VersionedTransaction): String? {
+        return sendTransaction(encode(transaction.serialize()))
     }
+
 
     /**
      * Send a raw transaction to the network, skipping preflights and running on base64 encoding
@@ -461,18 +443,18 @@ class Connection(url: String?, commitment: Commitment?) {
     fun sendRawTransaction64(encodedTransaction: String?): String? {
         options = JsonObject()
         options.addProperty("skipPreflight", true)
-        options.addProperty("preFlightCommitment", "confirmed")
+        options.addProperty("preFlightCommitment", commitment.toString())
         options.addProperty("encoding", "base64")
+        options.addProperty("maxRetries", 5)
         rpcRequest = RPCRequest(this, RPCRequests.SEND_RAW_TRANSACTION, encodedTransaction).addParam(options)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem(
+            logToSystem(
                 "Error RawTransaction64: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
                     "error"
                 )), 2
             )
             return null
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
         }
         return rpcRequest!!.rpcResponseAsString
     }
@@ -493,13 +475,12 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest = RPCRequest(this, RPCRequests.SEND_RAW_TRANSACTION, encodedTransaction).addParam(options)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem(
+            logToSystem(
                 "Error RawTransaction56: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
                     "error"
                 )), 2
             )
             return null
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
         }
         return rpcRequest!!.rpcResponseAsString
     }
@@ -508,8 +489,8 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest = RPCRequest(this, RPCRequests.SIMULATE_TRANSACTION, encodedTransaction)
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
-            Logger.logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
-            //throw new RuntimeException("Error: " + rpcRequest.getRpcResponse("error"));
+            logToSystem("Error: " + rpcRequest!!.getRpcResponse("error"), 2)
+            return null
         }
         return rpcRequest!!.rpcResponse
     }
@@ -518,6 +499,10 @@ class Connection(url: String?, commitment: Commitment?) {
         @Contract("_, _ -> new")
         fun createConnection(url: RPCUrls, commitment: Commitment?): Connection {
             return Connection(url.url, commitment)
+        }
+
+        fun createConnection(url: String?, commitment: Commitment?): Connection {
+            return Connection(url, commitment)
         }
     }
 }
