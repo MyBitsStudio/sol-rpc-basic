@@ -24,7 +24,7 @@ import java.util.*
  */
 @Getter
 class Connection(url: String?, commitment: Commitment?) {
-    val url: String?
+    private val url: String?
 
     private val commitment: Commitment?
 
@@ -72,6 +72,38 @@ class Connection(url: String?, commitment: Commitment?) {
                 return null
             }
             return rpcRequest!!.getRpcResponse("blockhash")
+        }
+
+    val blockHeight: Long
+        get() {
+            rpcRequest = RPCRequest(this, RPCRequests.GET_BLOCK_HEIGHT)
+            rpcRequest!!.buildRequest()
+            if (rpcRequest!!.hasError()) {
+                logToSystem(
+                    "Error getLatestBlockHash: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
+                        "error"
+                    )), 2
+                )
+                return -1
+            }
+            return rpcRequest!!.rpcResponseAsLong
+        }
+
+    val blockHeightFinal: Long
+        get() {
+            options = JsonObject()
+            options.addProperty("commitment", commitment.toString())
+            rpcRequest = RPCRequest(this, RPCRequests.GET_BLOCK_HEIGHT).addParam(options)
+            rpcRequest!!.buildRequest()
+            if (rpcRequest!!.hasError()) {
+                logToSystem(
+                    "Error getLatestBlockHash: " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
+                        "error"
+                    )), 2
+                )
+                return -1
+            }
+            return rpcRequest!!.rpcResponseAsLong
         }
 
     val extendedBlockhash: JsonObject?
@@ -459,6 +491,10 @@ class Connection(url: String?, commitment: Commitment?) {
         return rpcRequest!!.rpcResponseAsString
     }
 
+    fun sendRawTransaction64(transaction: VersionedTransaction): String? {
+        return sendRawTransaction64(Base64.getEncoder().encodeToString(transaction.serialize()))
+    }
+
     /**
      * NOT RECOMMENDED - Use sendRawTransaction64 instead
      * Send a raw transaction to the network, skipping preflights and running on base58 encoding
@@ -483,6 +519,11 @@ class Connection(url: String?, commitment: Commitment?) {
             return null
         }
         return rpcRequest!!.rpcResponseAsString
+    }
+
+    @Deprecated("")
+    fun sendRawTransaction58(transaction: VersionedTransaction): String? {
+        return sendRawTransaction58(encode(transaction.serialize()))
     }
 
     fun simulateTransaction(encodedTransaction: String?): JsonObject? {

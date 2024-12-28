@@ -7,23 +7,69 @@
 
 SOL Basic RPC is an extension to Sol4K to relive missing functions and operations that are essential to larger scale builds. This hopes to rewrite most RPC functions, wallets, and provide needed tools with quick-ease operations that make large scale applications able to be developed using Java.
 
+This is an extension of Sol4k, which is included in the build.
+
 > **Sol4K** - https://sol4k.org/
 
 ---
 
 ## How To Use
 
-> The library uses a lot of features as Sol4K. Most functions and features are used the same to make it ease-of-use case to switch.
-> Simple transactions can be sent by using :
+> The library contains tools and ease-of-access functions to make it easy to send and transfer tokens.
+> 
+> To send a simple SOL transfer, use the TransferSol.class
 >
 > ```java
-> Connection connection = Connection.createConnection("https://api.testnet.solana.com/", Commitment.CONFIRMED);
-> TransferInstruction instruction = new TransferInstruction(wallet.getKeypair().getPublicKey(), wallet2.getKeypair().getPublicKey(), 0.01 * LAMPORTS_PER_SOL );
-> TransactionMessage message = TransactionMessage.newMessage(wallet.getKeypair().getPublicKey(), connection.getLatestBlockHash(), instruction);
-> VersionedTransaction transaction = new VersionedTransaction(message);
-> transaction.sign(account.getWallet().getKeypair());
-> String signature = connection.sendTransaction56(transaction);
+> var connection = Connection.createConnection("https://api.testnet.solana.com/", Commitment.CONFIRMED);
+> var action = new TransferSol(KEYPAIR, PUBLICKKEY, AMOUNT, Commitment.CONFIRMED, connection);
+> var signature = action.execute();
 > ```
+> 
+> To send a simple SPL token transfer, use the TransferSPL.class
+> 
+>  ```java
+> var connection = Connection.createConnection("https://api.testnet.solana.com/", Commitment.CONFIRMED);
+> var action = new TransferSPL(KEYPAIR, PUBLICKKEY, MINT, AMOUNT, Commitment.CONFIRMED, connection);
+> var signature = action.execute();
+> ```
+
+## Tools
+
+> To make this library an ease-of-use case, we have some tools to help send transactions.
+> 
+> >Balance Checker to check for SOL :
+> >
+> >```java
+> >var connection = Connection.createConnection("https://api.testnet.solana.com/", Commitment.CONFIRMED);
+> >var checker = new BalanceChecker(connection, PUBLICKEY, false, "", 10);
+> >var balance = checker.pollBalance();
+> >```
+> 
+> >Balance Checker to check for SPL :
+> >
+> >```java
+> >var connection = Connection.createConnection("https://api.testnet.solana.com/", Commitment.CONFIRMED);
+> >var checker = new BalanceChecker(connection, PUBLICKEY, true, MINT, 10);
+> >var balance = checker.pollBalance();
+> >```
+> 
+> 
+> > Transaction Checker :
+> >
+> >```java
+> >var connection = Connection.createConnection("https://api.testnet.solana.com/", Commitment.CONFIRMED);
+> >var checker = new TransactionChecker(connection, SIGNATURE, 10);
+> >var confirmation = checker.startCheck();
+> >```
+> 
+> 
+> > Transaction Resender :
+> >
+> >```java
+> >var connection = Connection.createConnection("https://api.testnet.solana.com/", Commitment.CONFIRMED);
+> >var resender = new TransactionResender(connection, INSTRUCTION, KEYPAIR, 3, 10);
+> >var signature = resender.sendTransactionLegacy64();
+> >```
 
 ## Current RPC Features
 
@@ -35,6 +81,8 @@ SOL Basic RPC is an extension to Sol4K to relive missing functions and operation
 > getBalance (long) - Retrieves Lamports balance of PublicKey
 > latestBlockHash (string) - Retrieves lastes blockchash
 > extendedBlockhash (JsonObject) - Extended information of blockhash
+> getBlockHeight (long) - Gets the current height of the block
+> getBlockHeightFinal** (long) - Gets the current height of the block under Finalized commitment
 > firstAvailableBlock (long) - Gets the first available block slot
 > health (string) - Displays the health of the RPC
 > getSignatureStatuses (JsonArray) - An array of confirmation statuses of signatures
@@ -66,6 +114,43 @@ SOL Basic RPC is an extension to Sol4K to relive missing functions and operation
 > getTransaction (JsonObject ) - Retrieves information about the transaction
 > requestAirdrop (string) - Transaction signature of Airdrop
 > ```
+> 
+> To Add :
+>```
+>getAccountInfo
+>getBlock
+>getBlockCommitment
+>getBlockProduction
+>getBlockTime
+>getBlocks
+>getBlocksWithLimit
+>getClusterNodes
+>getEpochInfo
+>getEpochSchedule
+>getGenesisHash
+>getHighestSnapshotSlot
+>getIdentity
+>getInflationGovernor
+>getInflationRate
+>getInflationReward
+>getLargestAccounts
+>getLeaderSchedule
+>getMaxRetransmitSlot
+>getMaxShredInsertSlots
+>getProgramAccounts
+>getRecentPerformanceSamples
+>getRecentPrioritizationFees
+>getSlotLeader
+>getSlotLeaders
+>getStakeMinimumDelegation
+>getSupply
+>getTokenAccountBalance
+>getTokenAccountsByDelegate
+>getTransactionCount
+>getVersion
+>getVoteAccounts
+>minimumLedgerSlot
+>```
 
 ## Examples
 
@@ -84,15 +169,11 @@ SOL Basic RPC is an extension to Sol4K to relive missing functions and operation
 >
 > > Jito Extension - Be able to effortlessly and easily send Jito Bundles, manage tipping, and provide seemless integration with Jito
 > 
-> > Raydium Extension - Be able to swap, add liquidity, and check the market with Raydium
+> > Liquidity Extensions - Be able to swap, add liquidity, and check the market with multiple liquidity providers
 > 
-> > Pump.fun Extension - Be able to launch, buy, swap, and run the charts with Pump.Fun
-> 
-> > Connection Factory - Be able to branch out to multiple nodes, simulate running, and analyze credit usage with ease
-> 
-> > Wallet Factory - Be able to generate wallets on the fly, including Vanity wallets
-> 
-> > Token Tools - Launch, inspect, and jump into creating tokens within the SOL ecosystem
+> > Provider Extensions - Be able to use QuickNode, Helius, and Triton exclusive API's
+>
+> > Token Tools - Launch, inspect, and jump into creating tokens and NFT's within the SOL ecosystem
 > 
 > To learn more about Sol Enhanced Connection, please visit : 
 

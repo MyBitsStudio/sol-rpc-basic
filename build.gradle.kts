@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     kotlin("jvm")
     `java-library`
     `maven-publish`
@@ -32,9 +33,20 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
 }
 
+
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.jar {
+    manifest.attributes["Class-Path"] = configurations
+        .runtimeClasspath
+        .get()
+        .joinToString(separator = " ") { file ->
+            "libs/${file.name}"
+        }
+}
+
 
 java {
     withSourcesJar()
