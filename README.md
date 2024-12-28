@@ -97,9 +97,9 @@ This is an extension of Sol4k, which is included in the build.
 > isBlockhashValid (boolean) - Returns if the blockhash is still valid
 > sendTransaction (string) - Transaction signature of sent transaction
 > sendTransaction64** (string) - Transaction signature of sent transaction on Base 64
-> sendTransaction58** (string) - Transaction signature of sent transaction on Base 56
+> sendTransaction58** (string) - Transaction signature of sent transaction on Base 58
 > sendRawTransaction64** (string) - Transaction signature of sent transaction bypassing preflight on Base 64
-> sendRawTransaction58** (string) - Transaction signature of sent transaction bypassing preflight on Base 56
+> sendRawTransaction58** (string) - Transaction signature of sent transaction bypassing preflight on Base 58
 > simulateTransaction (JsonObject) - Simulates transaction and returns information about simulation
 > ```
 > 
