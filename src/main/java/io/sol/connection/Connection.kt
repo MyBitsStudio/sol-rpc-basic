@@ -24,7 +24,7 @@ import java.util.*
  */
 @Getter
 class Connection(url: String?, commitment: Commitment?) {
-    private val url: String?
+    val url: String?
 
     private val commitment: Commitment?
 
