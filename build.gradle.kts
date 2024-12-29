@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("java")
     id("com.github.johnrengelman.shadow") version "7.1.2"
@@ -24,13 +26,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.9")
 
     implementation("org.sol4k:sol4k:0.5.1")
-    implementation("com.github.pengrad:java-telegram-bot-api:7.9.1")
 
-    // https://mvnrepository.com/artifact/org.quartz-scheduler/quartz
-    implementation("org.quartz-scheduler:quartz:2.3.2")
-    // https://mvnrepository.com/artifact/at.favre.lib/bcrypt
-    implementation("at.favre.lib:bcrypt:0.9.0")
-    implementation(kotlin("stdlib-jdk8"))
 }
 
 

@@ -40,6 +40,10 @@ class Connection(url: String?, commitment: Commitment?) {
         this.commitment = commitment
     }
 
+    fun getCommit(): Commitment? {
+        return this.commitment
+    }
+
     /**
      * Returns the balance in lamports of the given PublicKey
      * @param publicKey - The search in question

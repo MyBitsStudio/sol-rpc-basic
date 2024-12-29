@@ -32,6 +32,10 @@ class ApiRequest(private val url: String, private val method: String) {
         return this
     }
 
+    fun retrieveResponse(): JsonObject? {
+        return this.response
+    }
+
     private fun build() {
         request = JsonObject()
 

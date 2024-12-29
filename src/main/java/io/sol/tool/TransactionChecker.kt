@@ -9,7 +9,7 @@ class TransactionChecker(private val connection: Connection, private val hash: S
             return null
         }
 
-        val status = connection.getSignatureStatuses(List.of(hash), false)
+        val status = connection.getSignatureStatuses(listOf(hash), false)
 
         if (status == null || status.isEmpty || status[0].isJsonNull) {
             try {

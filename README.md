@@ -1,5 +1,4 @@
-### SOL BASIC RPC 
-
+SOL RPC FOR JAVA
 ---
 
 **This is a development build. Currently in Alpha stages. You may run into errors, uncompleted functions, or badly written logic. They will be updated and finished before official release** 
@@ -157,7 +156,7 @@ This is an extension of Sol4k, which is included in the build.
 > We have included some examples on how to work with this and how to use this in a large scale operation.
 > They can be found at the following location : 
 > 
-> https://github.com/MyBitsStudio/sol-rpc-basic-example
+> https://github.com/MyBitsStudio/sol-rpc-basic-examples
 
 ## SOL Enhanced Connection
 
