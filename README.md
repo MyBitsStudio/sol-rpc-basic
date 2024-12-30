@@ -12,63 +12,14 @@ This is an extension of Sol4k, which is included in the build.
 
 ---
 
-## How To Use
+> For information on how to install and use the library, visit our [Docs](https://mybitsstudio.github.io/sol-rpc-for-java-docs/#/)
 
-> The library contains tools and ease-of-access functions to make it easy to send and transfer tokens.
-> 
-> To send a simple SOL transfer, use the TransferSol.class
+## Examples
+
+> We have included some examples on how to work with this and how to use this in a large scale operation.
+> They can be found at the following location :
 >
-> ```java
-> var connection = Connection.createConnection("https://api.testnet.solana.com/", Commitment.CONFIRMED);
-> var action = new TransferSol(KEYPAIR, PUBLICKKEY, AMOUNT, Commitment.CONFIRMED, connection);
-> var signature = action.execute();
-> ```
-> 
-> To send a simple SPL token transfer, use the TransferSPL.class
-> 
->  ```java
-> var connection = Connection.createConnection("https://api.testnet.solana.com/", Commitment.CONFIRMED);
-> var action = new TransferSPL(KEYPAIR, PUBLICKKEY, MINT, AMOUNT, Commitment.CONFIRMED, connection);
-> var signature = action.execute();
-> ```
-
-## Tools
-
-> To make this library an ease-of-use case, we have some tools to help send transactions.
-> 
-> >Balance Checker to check for SOL :
-> >
-> >```java
-> >var connection = Connection.createConnection("https://api.testnet.solana.com/", Commitment.CONFIRMED);
-> >var checker = new BalanceChecker(connection, PUBLICKEY, false, "", 10);
-> >var balance = checker.pollBalance();
-> >```
-> 
-> >Balance Checker to check for SPL :
-> >
-> >```java
-> >var connection = Connection.createConnection("https://api.testnet.solana.com/", Commitment.CONFIRMED);
-> >var checker = new BalanceChecker(connection, PUBLICKEY, true, MINT, 10);
-> >var balance = checker.pollBalance();
-> >```
-> 
-> 
-> > Transaction Checker :
-> >
-> >```java
-> >var connection = Connection.createConnection("https://api.testnet.solana.com/", Commitment.CONFIRMED);
-> >var checker = new TransactionChecker(connection, SIGNATURE, 10);
-> >var confirmation = checker.startCheck();
-> >```
-> 
-> 
-> > Transaction Resender :
-> >
-> >```java
-> >var connection = Connection.createConnection("https://api.testnet.solana.com/", Commitment.CONFIRMED);
-> >var resender = new TransactionResender(connection, INSTRUCTION, KEYPAIR, 3, 10);
-> >var signature = resender.sendTransactionLegacy64();
-> >```
+> https://github.com/MyBitsStudio/sol-rpc-basic-examples
 
 ## Current RPC Features
 
@@ -150,13 +101,6 @@ This is an extension of Sol4k, which is included in the build.
 >getVoteAccounts
 >minimumLedgerSlot
 >```
-
-## Examples
-
-> We have included some examples on how to work with this and how to use this in a large scale operation.
-> They can be found at the following location : 
-> 
-> https://github.com/MyBitsStudio/sol-rpc-basic-examples
 
 ## SOL Enhanced Connection
 

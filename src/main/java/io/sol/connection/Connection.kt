@@ -54,7 +54,7 @@ class Connection(url: String?, commitment: Commitment?) {
         rpcRequest!!.buildRequest()
         if (rpcRequest!!.hasError()) {
             logToSystem(
-                "Error getBalance (" + publicKey + ") : " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
+                "Error getBalance ($publicKey) : " + (if (rpcRequest!!.rpcResponse == null) "NULL" else rpcRequest!!.getRpcResponse(
                     "error"
                 )), 2
             )
