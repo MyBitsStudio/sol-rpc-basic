@@ -51,6 +51,7 @@ This is an extension of Sol4k, which is included in the build.
 > sendRawTransaction64** (string) - Transaction signature of sent transaction bypassing preflight on Base 64
 > sendRawTransaction58** (string) - Transaction signature of sent transaction bypassing preflight on Base 58
 > simulateTransaction (JsonObject) - Simulates transaction and returns information about simulation
+> getTransaction (JsonObject ) - Retrieves information about the transaction
 > ```
 > 
 > Working & Non-Tested :
@@ -61,7 +62,6 @@ This is an extension of Sol4k, which is included in the build.
 > getSignaturesForAddress (JsonArray) - A list of signatures associated with the address
 > getTokenAccountsByOwnerAndProgram (JsonArray) - A list of accounts by owner and specified program
 > getTokenLargestAccounts (JsonArray) - A list of the highest holders of the mint
-> getTransaction (JsonObject ) - Retrieves information about the transaction
 > requestAirdrop (string) - Transaction signature of Airdrop
 > ```
 > 
@@ -118,5 +118,5 @@ This is an extension of Sol4k, which is included in the build.
 >
 > > Token Tools - Launch, inspect, and jump into creating tokens and NFT's within the SOL ecosystem
 > 
-> To learn more about Sol Enhanced Connection, please visit : 
+> To learn more about Sol Enhanced Connection, please contact : https://t.me/QuantumComputed
 
